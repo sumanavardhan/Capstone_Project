@@ -8,6 +8,7 @@ Created on Tue Jue 6 16:39:56 2023
 from flask import Flask, render_template, request
 
 import boto3
+from flask import g
 
 app = Flask(__name__)
 
@@ -21,7 +22,6 @@ dynamodb = boto3.resource('dynamodb',
 dynamodbEmployee = boto3.resource('dynamodb',
                     aws_access_key_id="AKIAQENB5424S2QCDW2X",
                     aws_secret_access_key=  "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",
-                    aws_session_token= "IQoJb3JpZ2luX2VjEDEaCXVzLWVhc3QtMSJHMEUCIQCs4AI8odKRGPwCOcnimc9dLMi6I0q0lHCIlMAydfD4PQIgFuWvzL8iUQFU7GKUoByHbEQmaau82Z0S8aZhMPndRKUq6wEIeRAAGgwwMDk0NjY0MDY1ODUiDJBEw+y3jS10zVuIAyrIAarmq4MrehonakHB+1KvF2byYJunqyaM1Ru9/GSwjycPBG15S53l9egHzFLE/HdT8r50018we9vu1eFy1f2nq/b/YQ84DzFYcnuCtRpilskKL64nU9OJIJ5cy8yG0798SNeEF/o3JbHbzqciSilJ10cfDEW7LEpBPRsytRNftPJDygX/yACqxYf5yB+WNNsSent0v04feLP0jvVvMyFkNOh6FY+ULH3fZpI6LF05hr2lFj48M7jqf7lO/1uat84BnQO8fiTp77xyMNv5h6QGOpgBK81SOehgcGDkvM9TjCCC74sC8Ecb8R7NNoBl7/t5MN0uD10L4GhOGl5dVQohPU70I/ootnCS2q/4kVWej9AT8GkU6S+7/okwKnoc2nZmdiV6XCRlc9lB1O0gdiXRMLP4AA8aETyt9Rvr/HvgTnOCHAbwFinvRcrS00wZWUyWGK3NRPZEvDoVeN/fGE+Wk21NQV8ULvzkOeU="
                     )
 
 from boto3.dynamodb.conditions import Key, Attr
@@ -31,7 +31,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/signup', methods=['post'])
+@app.route('/signup', methods=['get', 'post'])
 def signup():
     if request.method == 'POST':
         name = request.form['name']
@@ -52,10 +52,11 @@ def signup():
         return render_template('login.html',msg = msg)
     return render_template('index.html')
 
-@app.route('/submission', methods=['post'])
+@app.route('/submission', methods=['GET', 'POST'])
 def submission():
     if request.method == 'POST':
         
+        id = str(get_latest_id() + 1)
         age = request.form['age']
         gender = request.form['gender']
         education_level = request.form['education_level']
@@ -64,21 +65,40 @@ def submission():
         salary = request.form['salary']
         
         table2 = dynamodbEmployee.Table('Salary')
+        # Generate a unique ID starting from 7000
         
         table2.put_item(
             Item={
-                'age': age,
-                'gender': gender,
-                'education_level': education_level,
-                'job_title': job_title,
-                'years_of_experience': years_of_experience,
-                'salary': salary
+                'id' : id,
+                'Age': age,
+                'Gender': gender,
+                'Education Level': education_level,
+                'Job Title': job_title,
+                'Years of Experience': years_of_experience,
+                'Salary': salary
             }
         )
         
         return "Form submitted successfully!"
     
-    return render_template('index.html')
+    return render_template('new_entry.html')
+
+#generates id
+def get_latest_id():
+    # Check if the latest ID is already stored in the Flask application context
+    if 'latest_id' in g:
+        return g.latest_id
+    
+    # Retrieve the latest ID from the database
+    response = dynamodbEmployee.Table('Salary').scan(
+        Select='COUNT'
+    )
+    latest_id = response['Count'] + 7000  # Add 7000 to start from 7000
+    
+    # Store the latest ID in the Flask application context for future use
+    g.latest_id = latest_id
+    
+    return latest_id
 
 @app.route('/login')
 def login():    
