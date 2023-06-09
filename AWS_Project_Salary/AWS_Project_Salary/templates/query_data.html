@@ -9,39 +9,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.8.2/css/lightbox.min.css">
     <link rel="stylesheet" href="static/css/styles.min.css">
+    <style>
+        .query-result {
+            background-color: #f8f9fa;
+            border: 1px solid #d7d7d7;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
     <div>
         <nav class="navbar navbar-light navbar-expand-md navigation-clean">
-            <div class="container"><a class="navbar-brand" href="http://localhost:5000/" style="color:#aedc8a;">CognixiaEmployee</a><button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
-                <div
-                    class="collapse navbar-collapse" id="navcol-1"></div>
-    </div>
-    </nav>
-    </div>
-    {{msg}}
-    <div class="login-clean">
-
-        <form method="post" action="/query">
-            <h2 class="sr-only">Query Data Form</h2>
-            <div class="illustration"><i class="icon ion-ios-navigate" style="color:#aedc8a;"></i></div>
-            <div class="form-group"><input class="form-control" type="number" name="id" placeholder="Enter ID"></div>
-            <div class="form-group">
-                <input type="submit" name="submit" value="Query Data" class="btn btn-primary btn-block" style="background-color:#aedc8a;color:rgb(40,140,38);">
+            <div class="container">
+                <a class="navbar-brand" href="http://localhost:5000/home" style="color:#aedc8a;">CognixiaEmployee</a>
+                <button class="navbar-toggler" data-toggle="collapse" data-target="#navcol-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navcol-1"></div>
             </div>
-        </form>
+        </nav>
+    </div>
+    {{ msg }}
+    <div class="container">
+        <div class="login-clean">
+            <form method="post" action="/query">
+                <h2 class="sr-only">Query Data Form</h2>
+                <div class="illustration"><i class="icon ion-ios-navigate" style="color:#aedc8a;"></i></div>
+                <div class="form-group">
+                    <input class="form-control" type="number" name="id" placeholder="Enter ID">
+                </div>
+                <div class="form-group">
+                    <input type="submit" name="submit" value="Query Data" class="btn btn-primary btn-block"
+                        style="background-color:#aedc8a;color:rgb(40,140,38);">
+                </div>
+            </form>
 
-        <div class="query-result">
             {% if result %}
-            <h3>Query Result:</h3>
-            <p>ID: {{ result.id }}</p>
-            <p>Age: {{ result.Age }}</p>
-            <p>Gender: {{ result.Gender }}</p>
-            <p>Education Level: {{ result['Education Level'] }}</p>
-            <p>Job Title: {{ result['Job Title'] }}</p>
-            <p>Years of Experience: {{ result['Years of Experience'] }}</p>
-            <p>Salary: {{ result.Salary }}</p>
+            <div class="query-result">
+                <h3>Query Result:</h3>
+                <p>ID: {{ result.id }}</p>
+                <p>Age: {{ result.Age }}</p>
+                <p>Gender: {{ result.Gender }}</p>
+                <p>Education Level: {{ result['Education Level'] }}</p>
+                <p>Job Title: {{ result['Job Title'] }}</p>
+                <p>Years of Experience: {{ result['Years of Experience'] }}</p>
+                <p>Salary: {{ result.Salary }}</p>
+            </div>
             {% endif %}
         </div>
     </div>
