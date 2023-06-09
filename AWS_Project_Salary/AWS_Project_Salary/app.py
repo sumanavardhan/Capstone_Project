@@ -6,12 +6,13 @@ Created on Tue Jue 6 16:39:56 2023
 """
 
 from flask import Flask, render_template, request
-
+from werkzeug.exceptions import abort
 import boto3
 from flask import g
 
 app = Flask(__name__)
 
+boto3.setup_default_session(region_name='us-east-1')
 
 dynamodb = boto3.resource('dynamodb',
                     aws_access_key_id="ASIA2X5HZ7YK5DA7JYTR",
@@ -37,9 +38,9 @@ def signup():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        
+
         table = dynamodb.Table('userdata')
-        
+
         table.put_item(
                 Item={
         'name': name,
@@ -48,14 +49,14 @@ def signup():
             }
         )
         msg = "Registration Complete. Please Login to your account !"
-    
+
         return render_template('login.html',msg = msg)
     return render_template('index.html')
 
 @app.route('/submission', methods=['GET', 'POST'])
 def submission():
     if request.method == 'POST':
-        
+
         id = str(get_latest_id() + 1)
         age = request.form['age']
         gender = request.form['gender']
@@ -63,10 +64,13 @@ def submission():
         job_title = request.form['job_title']
         years_of_experience = request.form['years_of_experience']
         salary = request.form['salary']
-        
+
+        # if age.isdigit() == False or int(age) <= 0:
+        #     abort(400,"Please ensure age is a number greater than 0")
+
         table2 = dynamodbEmployee.Table('Salary')
         # Generate a unique ID starting from 7000
-        
+
         table2.put_item(
             Item={
                 'id' : id,
@@ -78,9 +82,9 @@ def submission():
                 'Salary': salary
             }
         )
-        
+
         return "Form submitted successfully!"
-    
+
     return render_template('new_entry.html')
 
 @app.route('/query', methods=['GET', 'POST'])
@@ -114,7 +118,7 @@ def update_delete():
 
         # Update the item
         response = table2.update_item(
-            Key={'employee_id': id},  
+            Key={'employee_id': id},
             UpdateExpression='SET Age = :age, Gender = :gender, #el = :education_level, #jt = :job_title, #yoe = :years_of_experience, Salary = :salary',
             ExpressionAttributeNames={'#el': 'Education Level', '#jt': 'Job Title', '#yoe': 'Years of Experience'},
             ExpressionAttributeValues={
@@ -144,30 +148,30 @@ def get_latest_id():
     # Check if the latest ID is already stored in the Flask application context
     if 'latest_id' in g:
         return g.latest_id
-    
+
     # Retrieve the latest ID from the database
     response = dynamodbEmployee.Table('Salary').scan(
         Select='COUNT'
     )
     latest_id = response['Count'] + 7000  # Add 7000 to start from 7000
-    
+
     # Store the latest ID in the Flask application context for future use
     g.latest_id = latest_id
-    
+
     return latest_id
 
 @app.route('/login')
-def login():    
+def login():
     return render_template('login.html')
 
 
 @app.route('/check',methods = ['post'])
 def check():
     if request.method=='POST':
-        
+
         email = request.form['email']
         password = request.form['password']
-        
+
         table = dynamodb.Table('userdata')
         response = table.query(
                 KeyConditionExpression=Key('email').eq(email)
@@ -176,7 +180,7 @@ def check():
         name = items[0]['name']
         print(items[0]['password'])
         if password == items[0]['password']:
-            
+
             return render_template("home.html",name = name)
     return render_template("login.html")
 @app.route('/home')
@@ -188,6 +192,5 @@ def home():
 
 
 if __name__ == "__main__":
-    
-    app.run(debug=True)
 
+    app.run(debug=True)
