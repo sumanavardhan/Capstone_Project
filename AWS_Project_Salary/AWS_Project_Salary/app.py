@@ -83,6 +83,62 @@ def submission():
     
     return render_template('new_entry.html')
 
+@app.route('/query', methods=['GET', 'POST'])
+def query():
+    if request.method == 'POST':
+        id = request.form['id']
+        table2 = dynamodbEmployee.Table('Salary')
+        response = table2.get_item(Key={'id': id})
+        item = response.get('Item')
+
+        if item:
+            return render_template('query_data.html', result=item)
+        else:
+            msg = "No data found for the provided ID."
+            return render_template('query_data.html', msg=msg)
+
+    return render_template('query_data.html')
+
+@app.route('/update_delete', methods=['GET', 'POST'])
+def update_delete():
+    if request.method == 'POST':
+        id = request.form['id']
+        age = request.form['age']
+        gender = request.form['gender']
+        education_level = request.form['education_level']
+        job_title = request.form['job_title']
+        years_of_experience = request.form['years_of_experience']
+        salary = request.form['salary']
+
+        table2 = dynamodbEmployee.Table('Salary')
+
+        # Update the item
+        response = table2.update_item(
+            Key={'employee_id': id},  
+            UpdateExpression='SET Age = :age, Gender = :gender, #el = :education_level, #jt = :job_title, #yoe = :years_of_experience, Salary = :salary',
+            ExpressionAttributeNames={'#el': 'Education Level', '#jt': 'Job Title', '#yoe': 'Years of Experience'},
+            ExpressionAttributeValues={
+                ':age': age,
+                ':gender': gender,
+                ':education_level': education_level,
+                ':job_title': job_title,
+                ':years_of_experience': years_of_experience,
+                ':salary': salary
+            }
+        )
+
+        return "Record updated successfully!"
+
+    id = request.args.get('id')
+
+    table2 = dynamodbEmployee.Table('Salary')
+    response = table2.get_item(Key={'employee_id': id})
+    item = response.get('Item')
+
+    if item is None:
+        return "ID not found"
+    return render_template('update_delete.html', data=item)
+
 #generates id
 def get_latest_id():
     # Check if the latest ID is already stored in the Flask application context
