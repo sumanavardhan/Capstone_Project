@@ -65,9 +65,6 @@ def submission():
         years_of_experience = request.form['years_of_experience']
         salary = request.form['salary']
 
-        # if age.isdigit() == False or int(age) <= 0:
-        #     abort(400,"Please ensure age is a number greater than 0")
-
         table2 = dynamodbEmployee.Table('Salary')
         # Generate a unique ID starting from 7000
 
